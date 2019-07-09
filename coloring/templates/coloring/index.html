@@ -38,6 +38,7 @@
 	</style>
 
 	<script type="text/javascript" canvas="canvas">
+    paper.install(window);
 		window.onload = function() {
 			var canvas = document.getElementById('myCanvas');
 
@@ -54,19 +55,35 @@
 				options: [],
 				$container: $('#color-palette')
 			}
+      
 
 			// your rectangle gradient interaction goes in this function
 			// you may also add code outside of the function (e.g., global variables)
 			function myGradientInteraction(){
 				var tool = new paper.Tool();
+        
+        var rectangle = new paper.Rectangle();
+        rectangle.center = paper.view.center;
+        rectangle.size = new paper.Size(300, 150);
+        var path = new paper.Path.Rectangle(rectangle);
+        path.fillColor = "red";
 
+        var start;
+        
 				tool.onMouseDown = function (event) {
-
+          start = event.point;
 				}
 
 				tool.onMouseUp = function (event) {
-					
+          path.fillColor = {
+            gradient: {
+              stops: [cp.history[cp.history.length - 1], cp.history[cp.history.length - 2]]
+            },
+            origin: start,
+            destination: event.point
+          }
 				}
+        
 			}
 
 			// your custom interaction goes here!
