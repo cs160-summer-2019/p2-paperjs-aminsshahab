@@ -8,6 +8,7 @@
 
 	<script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
+  <script src="https://kit.fontawesome.com/89145cd6eb.js"></script>
 
 	<style type="text/css">
 		#color-palette {
@@ -18,6 +19,52 @@
 			position: absolute;
 			top: 0;
 		}
+    
+    #user-palette-menu {
+			width: 300px;
+      height: 75px;
+      border-top-left-radius: 25px;
+			background-color: #f1f1f1;
+			position: fixed;
+      bottom: 0;
+      right: 0;
+		}
+    
+    #user-palette-menu p {
+      width: 100%;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .palette-buttons {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .delete-button {
+      position: absolute;
+      left: 0;
+      padding-left: 1.5em;
+      bottom: 3em;
+    }
+    
+    .minus-button {
+      position: absolute;
+      right: 0;
+      padding-right: 1.5em;
+      bottom: 3em;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .displayed {
+      -webkit-transition: all 1s ease;
+      -moz-transition: all 1s ease;
+      -o-transition: all 1s ease;
+      transition: all 1s ease;
+    }
 
 		.swatch {
 			width: 24px;
@@ -56,7 +103,27 @@
 				$container: $('#color-palette')
 			}
       
-
+      // color palette
+			var userCpMenu = {
+				history: ["#000000"], // black selected by default
+				options: [],
+				$container: $('#user-palette-menu')
+			}
+      
+      $("#user-palette-menu").on("click", function(){
+        if(!$(this).hasClass('active')) {
+          $(this).animate({height:150},300);
+          $('.palette-buttons').removeClass('hidden');
+          $(this).addClass('active');
+        }
+      });
+      
+      $(document).on("click", '.minus-button', function(){
+          $('#user-palette-menu').animate({height:75},300);
+          $('.palette-buttons').addClass('hidden');
+          $('#user-palette-menu').removeClass('active');
+      });
+      
 			// your rectangle gradient interaction goes in this function
 			// you may also add code outside of the function (e.g., global variables)
 			function myGradientInteraction(){
@@ -161,5 +228,15 @@
 
 	<canvas id="myCanvas" width="750px" height="750px"></canvas>
 	<div id="color-palette"></div>
+  <div id="user-palette-menu">
+    <p>
+      Tools
+    </p>
+    <div class="palette-buttons hidden">
+      <i class="fas fa-times delete-button"></i>
+      <i class="fas fa-minus minus-button"></i>
+    </div>
+         
+  </div>
 </body>
 </html>
