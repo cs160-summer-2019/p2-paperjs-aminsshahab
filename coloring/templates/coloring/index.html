@@ -26,6 +26,7 @@
       border-top-left-radius: 25px;
 			background-color: #f1f1f1;
 			position: fixed;
+      flex-wrap: wrap;
       bottom: 0;
       right: 0;
 		}
@@ -34,6 +35,15 @@
       width: 100%;
       text-align: center;
       font-weight: 600;
+      margin-bottom: 0.5em;
+    }
+    
+    #user-palette-menu .user-palette {
+      display: flex;
+      flex-wrap: wrap;
+      position: absolute;
+      padding-left: 1em;
+      padding-right: 0.5em;
     }
     
     .palette-buttons {
@@ -107,21 +117,27 @@
 			var userCpMenu = {
 				history: ["#000000"], // black selected by default
 				options: [],
-				$container: $('#user-palette-menu')
+				$container: $('#user-palette-menu .user-palette')
 			}
       
-      $("#user-palette-menu").on("click", function(){
+      $("#user-palette-menu").on("click", function() {
         if(!$(this).hasClass('active')) {
-          $(this).animate({height:150},300);
+          $(this).animate({height:200},300);
           $('.palette-buttons').removeClass('hidden');
           $(this).addClass('active');
         }
       });
       
-      $(document).on("click", '.minus-button', function(){
+      $(document).on("click", '.minus-button', function() {
           $('#user-palette-menu').animate({height:75},300);
           $('.palette-buttons').addClass('hidden');
           $('#user-palette-menu').removeClass('active');
+      });
+      
+      $(document).on("click", '.delete-button', function() {
+        if ($('.user-palette').children().hasClass('active')) {
+          $('.user-palette').find('.active').removeClass('active').addClass('hidden');
+        }
       });
       
 			// your rectangle gradient interaction goes in this function
@@ -159,28 +175,58 @@
 				var tool = new paper.Tool();
 
 				tool.onMouseDown = function (event) {
-				    var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
-				    if (hit) {
-				        hit.item.fillColor = cp.history[cp.history.length - 1];
-				    }
+          var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
+          if (hit) {
+            hit.item.fillColor = cp.history[cp.history.length - 1];
+            var color = cp.history[cp.history.length - 1];
+            var swatch = $("<div>").css("background-color", color).addClass("swatch");
+            if (!userCpMenu.history.includes(cp.history[cp.history.length - 1])) { 
+              userCpMenu.history.push($(swatch).css("background-color"));
+              userCpMenu.$container.append(swatch);
+            } else if ($('.user-palette').children().hasClass('hidden')) {
+              console.log("HI");
+              $('.user-palette').children().each(function () {
+                if($(this).css("background-color") == swatch.css("background-color")) {
+                  $(this).removeClass('hidden');
+                }
+              });
+            }
+          }
 				}
 			}
 
 
 			// create a color palette with the given colors
-			function createColorPalette(colors){
+			function createColorPalette(colors, con){
 
 				// create a swatch for each color
 				for (var i = colors.length - 1; i >= 0; i--) {
-					var $swatch = $("<div>").css("background-color", colors[i])
-									   .addClass("swatch");
-					$swatch.click(function(){
-						// add color to the color palette history
-					  	cp.history.push($(this).css("background-color"));
-					});
-					cp.$container.append($swatch);
-				}
+					addSwatch(colors[i], con);
+        }
 			}
+      
+      function createCustomColorPalette(colors, con) {
+				for (var i = colors.length - 1; i >= 0; i--) {
+          var swatch = $("<div>").css("background-color", colors[i]).addClass("swatch");
+          $('.user-palette').on("click", '.swatch', function(event) {
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            cp.history.push($(this).css("background-color"));
+            $(this).addClass('active').siblings().removeClass('active');
+          });
+        }
+      }
+      
+      
+/** I made a separate function for adding swatches in order to be able to add swatches to the new color palette.**/
+      function addSwatch(color, con) {
+        var swatch = $("<div>").css("background-color", color)
+									   .addClass("swatch");
+        swatch.on("click", function() {
+          con.history.push($(this).css("background-color"));
+        });
+        con.$container.append(swatch);
+      }
 
 			// loads a set of colors from a json to create a color palette
 			function getColorsCreatePalette(){
@@ -190,23 +236,24 @@
 					for (var i = keys.length - 1; i >= 0; i--) {
 						cp.options.push(colors[keys[i]][500]);
 					}
-					createColorPalette(cp.options);
+					createColorPalette(cp.options, cp);
+          createCustomColorPalette(cp.options, userCpMenu);
 				});
 			}
 
 			function init(custom){
 				paper.setup(canvas);
 				getColorsCreatePalette();
-
+        
 				paper.project.importSVG(mandala.filePath, function(item) { 
 					mandala.item = item._children["design-freepik"];
-				    paper.project.insertLayer(0,mandala.item);
+          paper.project.insertLayer(0,mandala.item);
 
-				    if (custom) {
-				    	myCustomInteraction();	
-				    } else {
-				    	myGradientInteraction();
-				    }		
+          if (custom) {
+            myCustomInteraction();	
+          } else {
+            myGradientInteraction();
+          }		
 					
 				}); 
 			}
@@ -230,8 +277,9 @@
 	<div id="color-palette"></div>
   <div id="user-palette-menu">
     <p>
-      Tools
+      Recently Used
     </p>
+    <div class="user-palette"></div>
     <div class="palette-buttons hidden">
       <i class="fas fa-times delete-button"></i>
       <i class="fas fa-minus minus-button"></i>
