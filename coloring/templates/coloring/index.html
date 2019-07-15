@@ -65,6 +65,10 @@
       bottom: 3em;
     }
     
+    .swatch.active {
+      border: 1px solid black;
+    }
+    
     .hidden {
       display: none;
     }
@@ -184,7 +188,6 @@
               userCpMenu.history.push($(swatch).css("background-color"));
               userCpMenu.$container.append(swatch);
             } else if ($('.user-palette').children().hasClass('hidden')) {
-              console.log("HI");
               $('.user-palette').children().each(function () {
                 if($(this).css("background-color") == swatch.css("background-color")) {
                   $(this).removeClass('hidden');
@@ -213,6 +216,7 @@
             event.stopImmediatePropagation();
             cp.history.push($(this).css("background-color"));
             $(this).addClass('active').siblings().removeClass('active');
+            $('#color-palette').find('.active').removeClass('active');
           });
         }
       }
@@ -224,6 +228,8 @@
 									   .addClass("swatch");
         swatch.on("click", function() {
           con.history.push($(this).css("background-color"));
+          $(this).addClass('active').siblings().removeClass('active');
+          $('.user-palette').find('.active').removeClass('active');
         });
         con.$container.append(swatch);
       }
