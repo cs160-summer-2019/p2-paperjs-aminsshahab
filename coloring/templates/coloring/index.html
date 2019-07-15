@@ -4,27 +4,46 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  	<title>P3 Coloring</title>
+  	<title>Interactive Coloring Book</title>
 
 	<script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
   <script src="https://kit.fontawesome.com/89145cd6eb.js"></script>
 
 	<style type="text/css">
-		#color-palette {
+		#color-palette-menu {
 			width: 300px;
-			background-color: #f1f1f1;
+      height: 75px;
+      border-top-right-radius: 10px;
+			background-color: #D1D1D1;
 			display: flex;
 			flex-wrap: wrap;
-			position: absolute;
-			top: 0;
+			position: fixed;
+			bottom: 0;
+      left: 0;
 		}
+        
+    #color-palette-menu p {
+      width: 100%;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 0.5em;
+    }
+    
+    #color-palette-menu .color-palette {
+      display: flex;
+      flex-wrap: wrap;
+      position: absolute;
+      padding-left: 0.5em;
+      padding-right: 1em;
+      padding-top: 2.5em;
+    }
     
     #user-palette-menu {
 			width: 300px;
       height: 75px;
-      border-top-left-radius: 25px;
-			background-color: #f1f1f1;
+      border-top-left-radius: 10px;
+			background-color: #D1D1D1;
 			position: fixed;
       flex-wrap: wrap;
       bottom: 0;
@@ -46,7 +65,12 @@
       padding-right: 0.5em;
     }
     
-    .palette-buttons {
+    .rec-palette-buttons {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .col-palette-buttons {
       width: 100%;
       height: 100%;
     }
@@ -58,9 +82,18 @@
       bottom: 3em;
     }
     
-    .minus-button {
+    .minus-button-rec {
       position: absolute;
       right: 0;
+      padding-right: 1.5em;
+      bottom: 3em;
+    }
+    
+    .minus-button-col {
+      position: absolute;
+      right: 0;
+      top: 0;
+      padding-top: 1em;
       padding-right: 1.5em;
       bottom: 3em;
     }
@@ -96,6 +129,10 @@
 		    margin-right: auto;
 		    display: block;
 		}
+    
+    body {
+      background-color: #f0f0f0;
+    }
 	</style>
 
 	<script type="text/javascript" canvas="canvas">
@@ -114,10 +151,10 @@
 			var cp = {
 				history: ["#000000"], // black selected by default
 				options: [],
-				$container: $('#color-palette')
+				$container: $('#color-palette-menu .color-palette')
 			}
       
-      // color palette
+      // recently used palette
 			var userCpMenu = {
 				history: ["#000000"], // black selected by default
 				options: [],
@@ -127,14 +164,14 @@
       $("#user-palette-menu").on("click", function() {
         if(!$(this).hasClass('active')) {
           $(this).animate({height:200},300);
-          $('.palette-buttons').removeClass('hidden');
+          $('.rec-palette-buttons').removeClass('hidden');
           $(this).addClass('active');
         }
       });
       
-      $(document).on("click", '.minus-button', function() {
+      $(document).on("click", '.minus-button-rec', function() {
           $('#user-palette-menu').animate({height:75},300);
-          $('.palette-buttons').addClass('hidden');
+          $('.rec-palette-buttons').addClass('hidden');
           $('#user-palette-menu').removeClass('active');
       });
       
@@ -142,6 +179,20 @@
         if ($('.user-palette').children().hasClass('active')) {
           $('.user-palette').find('.active').removeClass('active').addClass('hidden');
         }
+      });
+      
+      $("#color-palette-menu").on("click", function() {
+        if(!$('#color-palette-menu').hasClass('active')) {
+          $('#color-palette-menu').animate({height:620},300);
+          $('.col-palette-buttons').removeClass('hidden');
+          $('#color-palette-menu').addClass('active');
+        }
+      });
+      
+      $(document).on("click", '.minus-button-col', function() {
+          $('#color-palette-menu').animate({height:75},300);
+          $('.col-palette-buttons').addClass('hidden');
+          $('#color-palette-menu').removeClass('active');
       });
       
 			// your rectangle gradient interaction goes in this function
@@ -240,8 +291,11 @@
 				$.getJSON('/static/coloring/vendors/material/material-colors.json', function(colors){
 					var keys = Object.keys(colors);
 					for (var i = keys.length - 1; i >= 0; i--) {
-						cp.options.push(colors[keys[i]][500]);
+            for (var j = 100; j < 1000; j += 100) {
+						  cp.options.push(colors[keys[i]][j]);
+            }
 					}
+          
 					createColorPalette(cp.options, cp);
           createCustomColorPalette(cp.options, userCpMenu);
 				});
@@ -279,16 +333,25 @@
 </head>
 <body>	
 
-	<canvas id="myCanvas" width="750px" height="750px"></canvas>
-	<div id="color-palette"></div>
+	<canvas id="myCanvas" width="750px" height="750px" ></canvas>
+	<div id="color-palette-menu">
+    <p>
+      Colors
+    </p>
+    <div class="col-palette-buttons hidden">
+      <i class="fas fa-minus minus-button-col"></i>
+    </div>  
+    <div class="color-palette"></div>  
+
+  </div>
   <div id="user-palette-menu">
     <p>
       Recently Used
     </p>
     <div class="user-palette"></div>
-    <div class="palette-buttons hidden">
+    <div class="rec-palette-buttons hidden">
       <i class="fas fa-times delete-button"></i>
-      <i class="fas fa-minus minus-button"></i>
+      <i class="fas fa-minus minus-button-rec"></i>
     </div>
          
   </div>
